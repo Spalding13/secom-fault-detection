@@ -33,6 +33,7 @@ This project uses terminology from manufacturing and machine learning. The most 
 - **Process run**: one row in the SECOM dataset. It represents one manufacturing observation collected during production. For example, it can be thought of as one item or batch passing through a monitored manufacturing process.
 - **Process parameter**: one measured numerical variable from the production process. For a non-microelectronics example, imagine a factory producing smartphones: temperature, pressure, machine speed, alignment measurement, or electrical test reading could all be process parameters.
 - **Target label**: the output value the model tries to predict. In this dataset, the label indicates whether the process outcome is normal or faulty.
+- **SECOM label convention**: `1` means fail/faulty and `-1` means pass/normal.
 - **Pass sample**: a process run that passed quality control.
 - **Fail sample**: a process run that failed quality control.
 - **Class imbalance**: a situation where one target class is much more common than the other. In SECOM, failures are rare compared with passes.
@@ -73,7 +74,7 @@ Let:
 - $p$ be the number of process parameters;
 - $X \in \mathbb{R}^{n \times p}$ be the feature matrix;
 - $x_i \in \mathbb{R}^p$ be the parameter vector for process run $i$;
-- $y_i$ be the target label for process run $i$.
+- $y_i \in \{-1, 1\}$ be the target label for process run $i$, where $1$ means fail and $-1$ means pass.
 
 The model learns a function:
 
