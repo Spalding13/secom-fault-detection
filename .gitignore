@@ -29,6 +29,7 @@ reports/figures/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !reports/figures/.gitkeep
+!reports/figures/electronics_manufacturing.png
 
 # Common large data formats
 *.csv
@@ -48,4 +49,3 @@ reports/figures/*
 Thumbs.db
 .vscode/
 .idea/
-
