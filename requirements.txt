@@ -7,4 +7,4 @@ jupyter
 notebook
 ipykernel
 scipy
-
+imbalanced-learn
