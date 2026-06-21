@@ -97,3 +97,29 @@ def get_oof_fail_probabilities(estimator, X, y, cv):
         )
 
     return oof_fail_proba
+
+
+def evaluate_thresholds(y_true, y_fail_proba, thresholds):
+    """Evaluate class predictions over a grid of Fail-probability thresholds."""
+    threshold_rows = []
+
+    for threshold in thresholds:
+        y_pred = np.where(y_fail_proba >= threshold, 1, -1)
+        row = summarize_model(
+            f"threshold_{threshold:.2f}",
+            y_true,
+            y_pred,
+            y_fail_proba,
+        )
+        row["threshold"] = threshold
+        threshold_rows.append(row)
+
+    return pd.DataFrame(threshold_rows)
+
+
+def select_best_threshold(threshold_results):
+    """Select the threshold with the best Fail F1-score, then Fail recall."""
+    return threshold_results.sort_values(
+        ["fail_f1", "fail_recall"],
+        ascending=False,
+    ).iloc[0]
