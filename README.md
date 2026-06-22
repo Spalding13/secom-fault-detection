@@ -116,6 +116,8 @@ The project is organized into four notebooks:
 
 Run the notebooks in this order if regenerating results from scratch.
 
+For review, start with `notebooks/01_secom_fault_detection.ipynb`. The other notebooks are supporting evidence: benchmark reproduction, experiment tracking, and persistence validation.
+
 ## 6. Final Results
 
 The final selected model is:
