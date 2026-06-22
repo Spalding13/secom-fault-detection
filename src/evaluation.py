@@ -22,6 +22,27 @@ def get_fail_probabilities(fitted_model, X, positive_label: int = 1):
     return fitted_model.predict_proba(X)[:, fail_class_index]
 
 
+def predict_with_threshold(
+    fitted_model,
+    X,
+    threshold,
+    positive_label: int = 1,
+    negative_label: int = -1,
+):
+    """Predict labels by applying a custom threshold to Fail probabilities."""
+    y_fail_proba = get_fail_probabilities(
+        fitted_model,
+        X,
+        positive_label=positive_label,
+    )
+    y_pred = np.where(
+        y_fail_proba >= threshold,
+        positive_label,
+        negative_label,
+    )
+    return y_pred, y_fail_proba
+
+
 def summarize_model(model_name, y_true, y_pred, y_fail_proba):
     """Return the main metrics for model comparison."""
     return {

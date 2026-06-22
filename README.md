@@ -10,10 +10,12 @@ Final Machine Learning project for predicting semiconductor manufacturing proces
 2. [Vocabulary](#2-vocabulary)
 3. [Dataset Description](#3-dataset-description)
 4. [Mathematical Formulation](#4-mathematical-formulation)
-5. [Planned Methodology](#5-planned-methodology)
-6. [Expected Deliverables](#6-expected-deliverables)
-7. [Experiment Tracking](#7-experiment-tracking)
-8. [Model Persistence](#8-model-persistence)
+5. [Notebook Structure](#5-notebook-structure)
+6. [Final Results](#6-final-results)
+7. [Setup and Usage](#7-setup-and-usage)
+8. [Experiment Tracking](#8-experiment-tracking)
+9. [Model Persistence](#9-model-persistence)
+10. [Limitations](#10-limitations)
 
 ## 1. Project Objective
 
@@ -100,28 +102,70 @@ $$
 
 and then applied to validation or test data. Computing this value using the full dataset would leak information from the test set into training.
 
-## 5. Planned Methodology
+## 5. Notebook Structure
 
-1. Load and inspect the SECOM feature and label files.
-2. Define clear terminology and target-label meaning.
-3. Perform exploratory data analysis focused on shape, target imbalance, missing values, and data quality.
-4. Split the data into training and test sets using stratification.
-5. Build `scikit-learn` Pipelines for preprocessing and modeling.
-6. Fit learned preprocessing steps only on training data to avoid data leakage.
-7. Train classical baseline models such as Logistic Regression, Random Forest, and Support Vector Machines.
-8. Evaluate models using metrics suitable for imbalanced classification.
-9. Explore dimensionality reduction with PCA as an optional later comparison.
-10. Discuss limitations and possible future improvements.
+The project is organized into four notebooks:
 
-## 6. Expected Deliverables
+| Notebook | Purpose |
+|---|---|
+| `notebooks/01_secom_fault_detection.ipynb` | Main analysis, EDA, preprocessing, model comparison, final model selection. |
+| `notebooks/02_uci_baseline_reproduction.ipynb` | Approximate reproduction attempt for the UCI feature-selection baseline. |
+| `notebooks/03_mlflow_experiment_tracking.ipynb` | Manual MLflow logging for representative model configurations and artifacts. |
+| `notebooks/04_model_persistence.ipynb` | Final fitted model artifact persistence and pickle round-trip validation. |
 
-- A GitHub repository with a clean project structure.
-- One main Jupyter notebook in English: `notebooks/01_secom_fault_detection.ipynb`.
-- Reusable helper modules under `src/`.
-- A README with project context, vocabulary, methodology, and mathematical framing.
-- Figures and evaluation outputs saved under `reports/figures/` when useful.
+Run the notebooks in this order if regenerating results from scratch.
 
-## 7. Experiment Tracking
+## 6. Final Results
+
+The final selected model is:
+
+| Item | Value |
+|---|---|
+| Model name | `RF + SelectKBest tuned` |
+| Model type | Random Forest classifier |
+| Preprocessing | median imputation, constant-parameter removal |
+| Feature selection | `SelectKBest(f_classif, k=200)` |
+| Hyperparameters | `n_estimators=100`, `class_weight="balanced"`, `max_depth=8`, `min_samples_leaf=5`, `random_state=42` |
+| Positive class | `1 = Fail` |
+| Negative class | `-1 = Pass` |
+| Selected threshold | `0.35` |
+| Threshold criterion | maximize Fail F1 on training-set out-of-fold predictions |
+
+Held-out test metrics:
+
+| Metric | Value |
+|---|---:|
+| Accuracy | `0.869` |
+| Balanced accuracy | `0.665` |
+| Fail precision | `0.237` |
+| Fail recall | `0.429` |
+| Fail F1 | `0.305` |
+| ROC-AUC | `0.774` |
+| PR-AUC / Average Precision | `0.284` |
+
+The threshold is selected using training-set out-of-fold predictions, not the held-out test set. The held-out test set is used only for final evaluation.
+
+## 7. Setup and Usage
+
+Install dependencies from the project root:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If creating a new environment, install the requirements into that environment first, then register or select the notebook kernel used by the project.
+
+Expected local raw files:
+
+```text
+data/raw/secom.data
+data/raw/secom_labels.data
+data/raw/secom.names
+```
+
+These raw data files are intentionally excluded from Git.
+
+## 8. Experiment Tracking
 
 MLflow tracking is implemented in `notebooks/03_mlflow_experiment_tracking.ipynb`.
 
@@ -136,14 +180,48 @@ Then open `http://127.0.0.1:5000` in a browser and select the `secom-fault-detec
 
 The generated `mlruns/` directory is local experiment state and is excluded from Git.
 
-## 8. Model Persistence
+## 9. Model Persistence
 
-The final fitted pipeline is saved by `notebooks/04_model_persistence.ipynb` under:
+The final fitted artifact is saved by `notebooks/04_model_persistence.ipynb` under:
 
 ```text
 models/secom_best_pipeline.pkl
 ```
 
-The pickle contains the fitted preprocessing steps and classifier together: imputer, feature filters, feature selector, and Random Forest model.
+The pickle contains a dictionary with the fitted pipeline and the selected decision threshold:
+
+```python
+artifact = {
+    "pipeline": fitted_pipeline,
+    "fail_threshold": 0.35,
+    "positive_label": 1,
+    "negative_label": -1,
+    "model_name": "RF + SelectKBest tuned",
+    "selection_metric": "Fail F1",
+}
+```
+
+Use the persisted threshold when converting Fail probabilities into predictions:
+
+```python
+from src.evaluation import predict_with_threshold
+from src.final_model import load_final_model_artifact
+
+artifact = load_final_model_artifact("models/secom_best_pipeline.pkl")
+y_pred, y_fail_proba = predict_with_threshold(
+    artifact["pipeline"],
+    X_new,
+    artifact["fail_threshold"],
+    positive_label=artifact["positive_label"],
+    negative_label=artifact["negative_label"],
+)
+```
 
 Only load this pickle from a trusted source. Pickle deserialization can execute code, and loading should use a compatible Python and library environment. The package versions used for the saved artifact are recorded in `environment_versions.txt`.
+
+## 10. Limitations
+
+- The dataset is small for the Fail class: only `104` failed process runs are available.
+- The process parameters are anonymized, so causal or physical interpretation is limited.
+- The dataset is high-dimensional and contains missing values.
+- The final model is best viewed as a risk-screening model, not a fully reliable automatic fault detector.
