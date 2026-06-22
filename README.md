@@ -67,7 +67,7 @@ The dataset is useful for this project because it contains realistic industrial 
 - a strongly imbalanced target, because failures are rare;
 - anonymized variables, which require statistical rather than domain-specific interpretation.
 
-Raw data files are expected to be placed locally under `data/raw/` and are excluded from version control when large.
+Raw data files are expected under `data/raw/` but are excluded from version control. Use `python scripts/download_data.py` to download and validate the official UCI files.
 
 ## 4. Mathematical Formulation
 
@@ -93,7 +93,7 @@ $$
 P(y_i = \text{fail} \mid x_i)
 $$
 
-The main modeling challenge is not only to predict the majority class correctly, but also to identify rare failures. Because of class imbalance, accuracy alone may be misleading. Metrics such as recall, precision, F1-score, ROC-AUC, and precision-recall AUC are more informative.
+The main modeling challenge is not only to predict the majority class correctly, but also to identify rare failures. Because of class imbalance, accuracy alone may be misleading. Metrics such as recall, precision, F1-score, ROC-AUC, and Average Precision, which summarizes precision-recall behavior, are more informative.
 
 Preprocessing must also be handled mathematically carefully. For example, if a parameter $x_j$ has missing values, an imputation value such as the training median should be computed only from the training split:
 
@@ -144,21 +144,27 @@ Held-out test metrics:
 | Fail recall | `0.429` |
 | Fail F1 | `0.305` |
 | ROC-AUC | `0.774` |
-| PR-AUC / Average Precision | `0.284` |
+| Average Precision | `0.284` |
 
-The threshold is selected using training-set out-of-fold predictions, not the held-out test set. The held-out test set is used only for final evaluation.
+The threshold is selected using training-set out-of-fold predictions, not the held-out test set. Candidate selection is based on training-set CV/OOF results. The held-out test set is used only for final evaluation after the model and threshold are fixed.
 
 ## 7. Setup and Usage
 
-Install dependencies from the project root:
+From the project root, create and activate an environment, then install dependencies:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
 
-If creating a new environment, install the requirements into that environment first, then register or select the notebook kernel used by the project.
+Download and validate the official UCI SECOM data:
 
-Expected local raw files:
+```powershell
+python scripts/download_data.py
+```
+
+Expected local raw files after download:
 
 ```text
 data/raw/secom.data
@@ -166,7 +172,18 @@ data/raw/secom_labels.data
 data/raw/secom.names
 ```
 
-These raw data files are intentionally excluded from Git.
+These raw data files are intentionally excluded from Git. The `data/raw/.gitkeep` file only preserves the empty directory structure. See `data/README.md` for source and validation details.
+
+Run the notebooks in order:
+
+```text
+notebooks/01_secom_fault_detection.ipynb
+notebooks/02_uci_baseline_reproduction.ipynb
+notebooks/03_mlflow_experiment_tracking.ipynb
+notebooks/04_model_persistence.ipynb
+```
+
+Notebook 01 performs candidate comparison and model selection using only training-set cross-validation and out-of-fold threshold tuning. The held-out test set is used only after the final model and threshold are fixed; final test metrics are evaluation metrics, not model-selection metrics.
 
 ## 8. Experiment Tracking
 
@@ -181,7 +198,7 @@ $env:MLFLOW_ALLOW_FILE_STORE = "true"
 
 Then open `http://127.0.0.1:5000` in a browser and select the `secom-fault-detection` experiment.
 
-The generated `mlruns/` directory is local experiment state and is excluded from Git.
+The generated `mlruns/` directory is local experiment state and is excluded from Git. Notebook 03 logs held-out test metrics only for the selected final model.
 
 ## 9. Model Persistence
 

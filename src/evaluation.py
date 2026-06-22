@@ -70,7 +70,6 @@ def summarize_model(model_name, y_true, y_pred, y_fail_proba):
         ),
         "roc_auc": roc_auc_score(y_true == 1, y_fail_proba),
         "average_precision": average_precision,
-        "pr_auc": average_precision,
     }
 
 
