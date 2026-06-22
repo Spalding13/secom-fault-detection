@@ -13,6 +13,7 @@ Final Machine Learning project for predicting semiconductor manufacturing proces
 5. [Planned Methodology](#5-planned-methodology)
 6. [Expected Deliverables](#6-expected-deliverables)
 7. [Experiment Tracking](#7-experiment-tracking)
+8. [Model Persistence](#8-model-persistence)
 
 ## 1. Project Objective
 
@@ -134,3 +135,15 @@ $env:MLFLOW_ALLOW_FILE_STORE = "true"
 Then open `http://127.0.0.1:5000` in a browser and select the `secom-fault-detection` experiment.
 
 The generated `mlruns/` directory is local experiment state and is excluded from Git.
+
+## 8. Model Persistence
+
+The final fitted pipeline is saved by `notebooks/04_model_persistence.ipynb` under:
+
+```text
+models/secom_best_pipeline.pkl
+```
+
+The pickle contains the fitted preprocessing steps and classifier together: imputer, feature filters, feature selector, and Random Forest model.
+
+Only load this pickle from a trusted source. Pickle deserialization can execute code, and loading should use a compatible Python and library environment. The package versions used for the saved artifact are recorded in `environment_versions.txt`.
