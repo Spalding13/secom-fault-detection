@@ -53,6 +53,12 @@ reports/tables/*
 *.tar.gz
 *.7z
 
+# Keep selected lightweight report tables
+!reports/tables/model_cv_comparison.csv
+!reports/tables/mlflow_model_comparison.csv
+!reports/tables/final_threshold_analysis.csv
+!reports/tables/uci_reproduction_comparison.csv
+
 # OS/editor files
 .DS_Store
 Thumbs.db

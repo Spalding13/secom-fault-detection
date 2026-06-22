@@ -1,0 +1,5 @@
+method,ber_mean_percent,ber_std_percent,fail_recall_mean_percent,fail_recall_std_percent,pass_recall_mean_percent,pass_recall_std_percent
+UCI F-test baseline,33.5,2.2,59.1,4.8,73.8,1.8
+UCI Pearson baseline,34.1,2.0,57.4,4.3,74.4,4.9
+Approx F-test reproduction,49.4107259342093,2.0834475944352806,2.0,4.21637021355784,99.17854813158141,0.7074959999500928
+Approx Pearson reproduction,49.4107259342093,2.0834475944352806,2.0,4.21637021355784,99.17854813158141,0.7074959999500928
