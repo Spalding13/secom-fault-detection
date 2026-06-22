@@ -16,6 +16,7 @@ Final Machine Learning project for predicting semiconductor manufacturing proces
 8. [Experiment Tracking](#8-experiment-tracking)
 9. [Model Persistence](#9-model-persistence)
 10. [Limitations](#10-limitations)
+11. [Sources and References](#11-sources-and-references)
 
 ## 1. Project Objective
 
@@ -225,3 +226,18 @@ Only load this pickle from a trusted source. Pickle deserialization can execute 
 - The process parameters are anonymized, so causal or physical interpretation is limited.
 - The dataset is high-dimensional and contains missing values.
 - The final model is best viewed as a risk-screening model, not a fully reliable automatic fault detector.
+
+## 11. Sources and References
+
+Main dataset and benchmark source:
+
+- McCann, M. & Johnston, A. (2008). **SECOM**. UCI Machine Learning Repository. DOI: [10.24432/C54305](https://doi.org/10.24432/C54305). Dataset page: [UCI SECOM](https://archive.ics.uci.edu/dataset/179/secom).
+- The UCI SECOM page is the source for the dataset size, label convention, missing-value description, and the published 10-fold baseline table used in `notebooks/02_uci_baseline_reproduction.ipynb`.
+
+Implementation references used in the notebooks:
+
+- scikit-learn: [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) and [common pitfalls / data leakage](https://scikit-learn.org/stable/common_pitfalls.html).
+- scikit-learn: [`SelectKBest`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html) and [`f_classif`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html).
+- scikit-learn: [`KernelRidge`](https://scikit-learn.org/stable/modules/generated/sklearn.kernel_ridge.KernelRidge.html), used in notebook 02 through a small classifier wrapper for the approximate UCI baseline reproduction.
+- scikit-learn: [`balanced_accuracy_score`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html) and [`average_precision_score`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.average_precision_score.html).
+- scikit-learn: [Precision-Recall example](https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html), used as background for evaluating imbalanced classification.
