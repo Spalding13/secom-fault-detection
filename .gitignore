@@ -19,17 +19,20 @@ ENV/
 # Environment files
 .env
 .env.*
+mlruns/
 
 # Local data and generated artifacts
 data/raw/*
 data/processed/*
 reports/figures/*
+reports/mlflow_artifacts/
 
 # Keep directory placeholders
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !reports/figures/.gitkeep
 !reports/figures/electronics_manufacturing.png
+!reports/figures/mlflow_experiment_comparison.png
 
 # Common large data formats
 *.csv

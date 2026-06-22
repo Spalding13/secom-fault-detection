@@ -12,6 +12,7 @@ Final Machine Learning project for predicting semiconductor manufacturing proces
 4. [Mathematical Formulation](#4-mathematical-formulation)
 5. [Planned Methodology](#5-planned-methodology)
 6. [Expected Deliverables](#6-expected-deliverables)
+7. [Experiment Tracking](#7-experiment-tracking)
 
 ## 1. Project Objective
 
@@ -118,3 +119,18 @@ and then applied to validation or test data. Computing this value using the full
 - Reusable helper modules under `src/`.
 - A README with project context, vocabulary, methodology, and mathematical framing.
 - Figures and evaluation outputs saved under `reports/figures/` when useful.
+
+## 7. Experiment Tracking
+
+MLflow tracking is implemented in `notebooks/03_mlflow_experiment_tracking.ipynb`.
+
+From the project root, open the local MLflow UI with:
+
+```powershell
+$env:MLFLOW_ALLOW_FILE_STORE = "true"
+.\.venv\Scripts\python.exe -m mlflow ui --backend-store-uri file:.\mlruns --port 5000
+```
+
+Then open `http://127.0.0.1:5000` in a browser and select the `secom-fault-detection` experiment.
+
+The generated `mlruns/` directory is local experiment state and is excluded from Git.
