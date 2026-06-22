@@ -26,6 +26,7 @@ data/raw/*
 data/processed/*
 reports/figures/*
 reports/mlflow_artifacts/
+reports/tables/*
 
 # Keep directory placeholders
 !data/raw/.gitkeep
@@ -33,6 +34,11 @@ reports/mlflow_artifacts/
 !reports/figures/.gitkeep
 !reports/figures/electronics_manufacturing.png
 !reports/figures/mlflow_experiment_comparison.png
+!reports/tables/.gitkeep
+!reports/tables/model_cv_comparison.csv
+!reports/tables/mlflow_model_comparison.csv
+!reports/tables/final_threshold_analysis.csv
+!reports/tables/uci_reproduction_comparison.csv
 
 # Common large data formats
 *.csv

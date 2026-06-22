@@ -45,6 +45,7 @@ def predict_with_threshold(
 
 def summarize_model(model_name, y_true, y_pred, y_fail_proba):
     """Return the main metrics for model comparison."""
+    average_precision = average_precision_score(y_true == 1, y_fail_proba)
     return {
         "model": model_name,
         "accuracy": accuracy_score(y_true, y_pred),
@@ -68,8 +69,23 @@ def summarize_model(model_name, y_true, y_pred, y_fail_proba):
             zero_division=0,
         ),
         "roc_auc": roc_auc_score(y_true == 1, y_fail_proba),
-        "pr_auc": average_precision_score(y_true == 1, y_fail_proba),
+        "average_precision": average_precision,
+        "pr_auc": average_precision,
     }
+
+
+def summarize_cv_results(cv_results):
+    """Return mean/std metric summary for cross-validation result rows."""
+    summary = (
+        cv_results
+        .drop(columns="fold")
+        .groupby("model")
+        .agg(["mean", "std"])
+    )
+    summary.columns = [
+        f"{metric}_{stat}" for metric, stat in summary.columns
+    ]
+    return summary
 
 
 def evaluate_model_cv(model_name, estimator, X, y, cv):
@@ -98,6 +114,30 @@ def evaluate_model_cv(model_name, estimator, X, y, cv):
         fold_results.append(row)
 
     return pd.DataFrame(fold_results)
+
+
+def get_oof_predictions(estimator, X, y, cv, threshold=None):
+    """Generate out-of-fold predictions and Fail probabilities."""
+    oof_fail_proba = np.zeros(len(y))
+    oof_pred = np.zeros(len(y), dtype=int)
+
+    for train_idx, valid_idx in cv.split(X, y):
+        X_fold_train = X.iloc[train_idx]
+        X_fold_valid = X.iloc[valid_idx]
+        y_fold_train = y.iloc[train_idx]
+
+        fold_model = clone(estimator)
+        fold_model.fit(X_fold_train, y_fold_train)
+
+        fold_fail_proba = get_fail_probabilities(fold_model, X_fold_valid)
+        oof_fail_proba[valid_idx] = fold_fail_proba
+
+        if threshold is None:
+            oof_pred[valid_idx] = fold_model.predict(X_fold_valid)
+        else:
+            oof_pred[valid_idx] = np.where(fold_fail_proba >= threshold, 1, -1)
+
+    return oof_pred, oof_fail_proba
 
 
 def get_oof_fail_probabilities(estimator, X, y, cv):
