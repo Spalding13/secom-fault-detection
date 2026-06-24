@@ -17,9 +17,36 @@ from sklearn.metrics import (
 
 
 def get_fail_probabilities(fitted_model, X, positive_label: int = 1):
-    """Return predicted probabilities for the Fail class."""
-    fail_class_index = list(fitted_model.classes_).index(positive_label)
-    return fitted_model.predict_proba(X)[:, fail_class_index]
+    """Return predicted probabilities for the Fail class.
+
+    Threshold tuning and probability-based metrics require ``predict_proba``.
+    Decision scores from estimators such as ``KernelRidgeClassifier`` are not
+    treated as probabilities because they are not calibrated to the [0, 1]
+    interval.
+    """
+    if not hasattr(fitted_model, "predict_proba"):
+        raise TypeError(
+            f"{type(fitted_model).__name__} does not provide predict_proba(). "
+            "Use label-based metrics or calibrate the estimator before "
+            "probability-based evaluation."
+        )
+
+    if not hasattr(fitted_model, "classes_"):
+        raise AttributeError(
+            "The fitted model must expose classes_ before Fail probabilities "
+            "can be selected."
+        )
+
+    classes = list(fitted_model.classes_)
+    if positive_label not in classes:
+        raise ValueError(
+            f"Positive label {positive_label!r} is not present in model "
+            f"classes {classes!r}."
+        )
+
+    fail_class_index = classes.index(positive_label)
+    probabilities = fitted_model.predict_proba(X)
+    return probabilities[:, fail_class_index]
 
 
 def predict_with_threshold(

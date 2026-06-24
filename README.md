@@ -250,6 +250,7 @@ Only load this pickle from a trusted source. Pickle deserialization can execute 
 ## 10. Limitations
 
 - The dataset is small for the Fail class: only `104` failed process runs are available.
+- Only `83` Fail samples are present in the training split used for model and threshold selection. Out-of-fold predictions prevent direct training-row leakage, but hyperparameter and threshold comparisons can still be noisy or optimistic because the same limited training data guides those choices.
 - The process parameters are anonymized, so causal or physical interpretation is limited.
 - The dataset is high-dimensional and contains missing values.
 - The final model is best viewed as a risk-screening model, not a fully reliable automatic fault detector.
