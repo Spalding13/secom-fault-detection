@@ -103,6 +103,13 @@ $$
 
 and then applied to validation or test data. Computing this value using the full dataset would leak information from the test set into training.
 
+Before imputation, parameters with more than `50%` missing values are removed.
+The retained columns are learned from each training split or cross-validation
+fold, so validation and test rows do not influence this decision.
+The full-dataset EDA finds `28` such parameters, while the fixed training split
+used by the final model removes `24`; this difference is expected because the
+filter is learned without inspecting the held-out test rows.
+
 ## 5. Notebook Structure
 
 The project is organized into four notebooks:
@@ -126,9 +133,9 @@ The final selected model is:
 |---|---|
 | Model name | `RF + SelectKBest tuned` |
 | Model type | Random Forest classifier |
-| Preprocessing | median imputation, constant-parameter removal |
+| Preprocessing | remove parameters with >50% training missingness, median imputation, constant-parameter removal |
 | Feature selection | `SelectKBest(f_classif, k=200)` |
-| Hyperparameters | `n_estimators=100`, `class_weight="balanced"`, `max_depth=8`, `min_samples_leaf=5`, `random_state=42` |
+| Hyperparameters | `n_estimators=100`, `class_weight="balanced"`, `max_depth=None`, `min_samples_leaf=5`, `random_state=42` |
 | Positive class | `1 = Fail` |
 | Negative class | `-1 = Pass` |
 | Selected threshold | `0.35` |
@@ -138,13 +145,13 @@ Held-out test metrics:
 
 | Metric | Value |
 |---|---:|
-| Accuracy | `0.869` |
-| Balanced accuracy | `0.665` |
-| Fail precision | `0.237` |
-| Fail recall | `0.429` |
-| Fail F1 | `0.305` |
-| ROC-AUC | `0.774` |
-| Average Precision | `0.284` |
+| Accuracy | `0.901` |
+| Balanced accuracy | `0.638` |
+| Fail precision | `0.292` |
+| Fail recall | `0.333` |
+| Fail F1 | `0.311` |
+| ROC-AUC | `0.771` |
+| Average Precision | `0.238` |
 
 The threshold is selected using training-set out-of-fold predictions, not the held-out test set. Candidate selection is based on training-set CV/OOF results. The held-out test set is used only for final evaluation after the model and threshold are fixed.
 
@@ -214,6 +221,7 @@ The pickle contains a dictionary with the fitted pipeline and the selected decis
 artifact = {
     "pipeline": fitted_pipeline,
     "fail_threshold": 0.35,
+    "max_missing_fraction": 0.50,
     "positive_label": 1,
     "negative_label": -1,
     "model_name": "RF + SelectKBest tuned",

@@ -10,6 +10,11 @@ from sklearn.feature_selection import SelectKBest, VarianceThreshold, f_classif
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
+from src.preprocessing import (
+    DEFAULT_MAX_MISSING_FRACTION,
+    MissingValueColumnFilter,
+)
+
 
 FINAL_MODEL_NAME = "RF + SelectKBest tuned"
 FINAL_FAIL_THRESHOLD = 0.35
@@ -26,7 +31,7 @@ FINAL_NEGATIVE_LABEL = -1
 FINAL_MODEL_PARAMS = {
     "n_estimators": 100,
     "class_weight": "balanced",
-    "max_depth": 8,
+    "max_depth": None,
     "min_samples_leaf": 5,
     "random_state": FINAL_RANDOM_STATE,
     "n_jobs": -1,
@@ -43,6 +48,12 @@ FINAL_FEATURE_SELECTION = {
 def build_final_pipeline():
     """Build the selected final SECOM preprocessing-and-model pipeline."""
     return Pipeline(steps=[
+        (
+            "missingness_filter",
+            MissingValueColumnFilter(
+                max_missing_fraction=DEFAULT_MAX_MISSING_FRACTION
+            ),
+        ),
         ("imputer", SimpleImputer(strategy="median")),
         ("variance_filter", VarianceThreshold(threshold=0.0)),
         (
@@ -67,6 +78,7 @@ def build_final_model_artifact(fitted_pipeline):
         "random_state": FINAL_RANDOM_STATE,
         "model_params": FINAL_MODEL_PARAMS.copy(),
         "feature_selection": FINAL_FEATURE_SELECTION.copy(),
+        "max_missing_fraction": DEFAULT_MAX_MISSING_FRACTION,
     }
 
 
