@@ -103,9 +103,12 @@ $$
 
 and then applied to validation or test data. Computing this value using the full dataset would leak information from the test set into training.
 
-Before imputation, parameters with more than `50%` missing values are removed.
-The retained columns are learned from each training split or cross-validation
-fold, so validation and test rows do not influence this decision.
+High-missingness parameters are filtered using a custom
+`MissingValueColumnFilter` inside the sklearn pipeline before median imputation.
+During cross-validation, the transformer is fitted separately within each
+training fold, preventing validation-fold missingness information from leaking
+into the retained-column decision. The final pipeline uses the same fitted
+transformer before constant-feature removal and feature selection.
 The full-dataset EDA finds `28` such parameters, while the fixed training split
 used by the final model removes `24`; this difference is expected because the
 filter is learned without inspecting the held-out test rows.
@@ -124,6 +127,8 @@ The project is organized into four notebooks:
 Run the notebooks in this order if regenerating results from scratch.
 
 For review, start with `notebooks/01_secom_fault_detection.ipynb`. The other notebooks are supporting evidence: benchmark reproduction, experiment tracking, and persistence validation.
+
+Notebook 02 intentionally omits the final project's 50% missingness filter because the published UCI baseline does not specify that rule. This keeps the benchmark reproduction separate from the final project methodology used in notebooks 01, 03, and 04.
 
 ## 6. Final Results
 
@@ -153,7 +158,7 @@ Held-out test metrics:
 | ROC-AUC | `0.771` |
 | Average Precision | `0.238` |
 
-The threshold is selected using training-set out-of-fold predictions, not the held-out test set. Candidate selection is based on training-set CV/OOF results. The held-out test set is used only for final evaluation after the model and threshold are fixed.
+The threshold is selected using training-set out-of-fold predictions, not the held-out test set. Candidate selection is based on training-set CV/OOF results. The held-out test set is not used to select sparse columns, models, hyperparameters, or the threshold; it is used only for final evaluation after those choices are fixed.
 
 ## 7. Setup and Usage
 
@@ -226,6 +231,7 @@ artifact = {
     "negative_label": -1,
     "model_name": "RF + SelectKBest tuned",
     "selection_metric": "Fail F1",
+    "threshold_selection_method": "maximize Fail F1 on training-set out-of-fold predictions",
 }
 ```
 
