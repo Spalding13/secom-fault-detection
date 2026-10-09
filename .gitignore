@@ -64,3 +64,6 @@ reports/tables/*
 Thumbs.db
 .vscode/
 .idea/
+
+# Local directories
+/sandbox/sandbox_notebook.ipynb
